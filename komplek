@@ -1,0 +1,77 @@
+-- ✅ Obsidian UI Setup
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+
+Library.ForceCheckbox = false
+Library.ShowToggleFrameInKeybinds = true
+
+local Window = Library:CreateWindow({
+    Title = "Made by MasterZ",
+    Footer = "v2.0.0",
+    Icon = 0,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab("Main", "user")
+}
+
+local GroupBox = Tabs.Main:AddLeftGroupbox("Auto System")
+
+-- ✅ Auto NPC Toggle
+GroupBox:AddToggle("AutoNPC", {
+	Text = "Auto NPC",
+	Default = false,
+	Tooltip = "Terima visitor milik sendiri otomatis",
+	Callback = function(v)
+		if v then
+			Library:Notify("✅ Auto NPC aktif", 3)
+		else
+			Library:Notify("⛔ Auto NPC dimatikan", 3)
+		end
+	end,
+})
+
+-- ✅ Rod Dropdown
+GroupBox:AddDropdown("SelectedRod", {
+    Values = { "AuroraRod", "NormalRod" },
+    Default = 1,
+    Multi = false,
+    Text = "Rod yang digunakan",
+    Tooltip = "Pilih Rod yang sedang kamu pakai",
+    Callback = function(v)
+        Library:Notify("🎣 Rod aktif: " .. v, 3)
+    end
+})
+
+-- ✅ Auto Fish Toggle
+local Toggles = Library.Toggles
+local Options = Library.Options
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+RunService.Heartbeat:Connect(function()
+	if Toggles.AutoFish and Toggles.AutoFish.Value then
+		local character = player.Character or player.CharacterAdded:Wait()
+		local selectedRod = Options.SelectedRod.Value
+		local rod = character:FindFirstChild(selectedRod)
+		if rod and rod:FindFirstChild("MiniGame") then
+			rod.MiniGame:FireServer("Complete")
+		end
+	end
+end)
+
+GroupBox:AddToggle("AutoFish", {
+	Text = "Auto Fish",
+	Default = false,
+	Tooltip = "Otomatis mancing jika pegang Rod",
+	Callback = function(v)
+		if v then
+			Library:Notify("🎣 Auto Fish aktif", 3)
+		else
+			Library:Notify("🛑 Auto Fish dimatikan", 3)
+		end
+	end,
+})
