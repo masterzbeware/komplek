@@ -33,9 +33,15 @@ GroupBox:AddToggle("AutoNPC", {
 	end,
 })
 
--- ✅ Rod Dropdown
+-- ✅ Rod Dropdown (Default hanya NormalRod)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local Options = Library.Options
+local Toggles = Library.Toggles
+local RunService = game:GetService("RunService")
+
 GroupBox:AddDropdown("SelectedRod", {
-    Values = { "AuroraRod", "NormalRod" },
+    Values = { "NormalRod" },
     Default = 1,
     Multi = false,
     Text = "Rod yang digunakan",
@@ -45,13 +51,30 @@ GroupBox:AddDropdown("SelectedRod", {
     end
 })
 
--- ✅ Auto Fish Toggle
-local Toggles = Library.Toggles
-local Options = Library.Options
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
+-- ✅ Tombol Refresh Rod dari Backpack
+GroupBox:AddButton("🔄 Refresh Rod dari Backpack", function()
+    local backpack = player:FindFirstChild("Backpack")
+    if not backpack then
+        Library:Notify("❌ Backpack tidak ditemukan", 3)
+        return
+    end
 
+    local rods = {}
+    for _, item in ipairs(backpack:GetChildren()) do
+        if item:IsA("Tool") and item.Name:lower():find("rod") then
+            table.insert(rods, item.Name)
+        end
+    end
+
+    if #rods == 0 then
+        rods = { "Tidak ada Rod" }
+    end
+
+    Options.SelectedRod:SetValues(rods)
+    Library:Notify("✅ Rod di-refresh", 3)
+end)
+
+-- ✅ Auto Fish Toggle
 RunService.Heartbeat:Connect(function()
 	if Toggles.AutoFish and Toggles.AutoFish.Value then
 		local character = player.Character or player.CharacterAdded:Wait()
