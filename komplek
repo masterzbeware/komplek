@@ -19,21 +19,7 @@ local Tabs = {
 
 local GroupBox = Tabs.Main:AddLeftGroupbox("Auto System")
 
--- ✅ Auto NPC Toggle
-GroupBox:AddToggle("AutoNPC", {
-	Text = "Auto NPC",
-	Default = false,
-	Tooltip = "Terima visitor milik sendiri otomatis",
-	Callback = function(v)
-		if v then
-			Library:Notify("✅ Auto NPC aktif", 3)
-		else
-			Library:Notify("⛔ Auto NPC dimatikan", 3)
-		end
-	end,
-})
-
--- ✅ Rod Dropdown (Default hanya NormalRod)
+-- ✅ Setup Rod Dropdown (default NormalRod)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local Options = Library.Options
@@ -51,30 +37,36 @@ GroupBox:AddDropdown("SelectedRod", {
     end
 })
 
--- ✅ Tombol Refresh Rod dari Backpack
-GroupBox:AddButton("🔄 Refresh Rod dari Backpack", function()
-    local backpack = player:FindFirstChild("Backpack")
-    if not backpack then
-        Library:Notify("❌ Backpack tidak ditemukan", 3)
-        return
-    end
-
+-- 🔄 Tombol Refresh Rod dari Backpack & Character
+GroupBox:AddButton("🔄 Refresh Rod dari Backpack & Character", function()
     local rods = {}
-    for _, item in ipairs(backpack:GetChildren()) do
-        if item:IsA("Tool") and item.Name:lower():find("rod") then
-            table.insert(rods, item.Name)
+    local containers = {
+        player:FindFirstChild("Backpack"),
+        player.Character
+    }
+
+    for _, container in ipairs(containers) do
+        if container then
+            for _, item in ipairs(container:GetChildren()) do
+                print("Cek tool:", item.Name)
+                if item:IsA("Tool") and item.Name:lower():find("rod") then
+                    table.insert(rods, item.Name)
+                end
+            end
         end
     end
 
     if #rods == 0 then
         rods = { "Tidak ada Rod" }
+        Library:Notify("❌ Tidak ada Rod ditemukan", 3)
+    else
+        Library:Notify("✅ Rod ditemukan: " .. table.concat(rods, ", "), 3)
     end
 
     Options.SelectedRod:SetValues(rods)
-    Library:Notify("✅ Rod di-refresh", 3)
 end)
 
--- ✅ Auto Fish Toggle
+-- ✅ Auto Fish Toggle (sekarang satu-satunya toggle di Auto System)
 RunService.Heartbeat:Connect(function()
 	if Toggles.AutoFish and Toggles.AutoFish.Value then
 		local character = player.Character or player.CharacterAdded:Wait()
