@@ -37,7 +37,6 @@ GroupBox:AddDropdown("SelectedRod", {
     end
 })
 
--- 🔄 Tombol Refresh Rod dari Backpack & Character
 GroupBox:AddButton("🔄 Refresh Rod dari Backpack & Character", function()
     local rods = {}
     local containers = {
@@ -66,27 +65,47 @@ GroupBox:AddButton("🔄 Refresh Rod dari Backpack & Character", function()
     Options.SelectedRod:SetValues(rods)
 end)
 
--- ✅ Auto Fish Toggle (sekarang satu-satunya toggle di Auto System)
+-- ✅ Auto Fish Aman
+local Debounce = false
+
 RunService.Heartbeat:Connect(function()
-	if Toggles.AutoFish and Toggles.AutoFish.Value then
-		local character = player.Character or player.CharacterAdded:Wait()
-		local selectedRod = Options.SelectedRod.Value
-		local rod = character:FindFirstChild(selectedRod)
-		if rod and rod:FindFirstChild("MiniGame") then
-			rod.MiniGame:FireServer("Complete")
-		end
-	end
+    if Toggles.AutoFish and Toggles.AutoFish.Value and not Debounce then
+        local character = player.Character or player.CharacterAdded:Wait()
+        local selectedRod = Options.SelectedRod.Value
+        local rod = character:FindFirstChild(selectedRod)
+
+        if rod and rod:FindFirstChild("MiniGame") then
+            local minigame = rod.MiniGame
+
+            Debounce = true
+
+            -- Mulai minigame secara natural
+            minigame:FireServer("Start")
+            
+            -- Waktu tunggu acak agar terlihat seperti manusia (3–6 detik)
+            local waitTime = math.random(30, 60) / 10
+            task.wait(waitTime)
+
+            -- Selesaikan minigame
+            minigame:FireServer("Complete")
+
+            -- Delay tambahan sebelum loop berikutnya
+            task.wait(math.random(1, 2))
+
+            Debounce = false
+        end
+    end
 end)
 
 GroupBox:AddToggle("AutoFish", {
-	Text = "Auto Fish",
-	Default = false,
-	Tooltip = "Otomatis mancing jika pegang Rod",
-	Callback = function(v)
-		if v then
-			Library:Notify("🎣 Auto Fish aktif", 3)
-		else
-			Library:Notify("🛑 Auto Fish dimatikan", 3)
-		end
-	end,
+    Text = "Auto Fish",
+    Default = false,
+    Tooltip = "Otomatis mancing jika pegang Rod",
+    Callback = function(v)
+        if v then
+            Library:Notify("🎣 Auto Fish aktif (mode aman)", 3)
+        else
+            Library:Notify("🛑 Auto Fish dimatikan", 3)
+        end
+    end,
 })
